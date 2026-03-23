@@ -1,5 +1,6 @@
 package com.example.adminapp
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,20 +38,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.room.Room
 import com.example.adminapp.common.ProjectStatus
+import com.example.adminapp.dao.ProjectDao
+import com.example.adminapp.database.AppDatabase
 import com.example.adminapp.models.ProjectModel
 import com.example.adminapp.models.SpecialRequirementModel
 import com.example.adminapp.ui.components.DatePickerModal
 import com.example.adminapp.ui.components.PrimaryTopBar
 import com.example.adminapp.ui.theme.AdminAppTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import kotlin.jvm.java
 
 class CreateProjectActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "project-expense"
+        ).build()
+        val dao = db.projectDao()
         enableEdgeToEdge()
         setContent {
             AdminAppTheme {
@@ -66,7 +79,10 @@ class CreateProjectActivity : ComponentActivity() {
                     },
                 ) { innerPadding ->
                     Column(modifier = Modifier.padding(innerPadding)) {
-                        ProjectForm()
+                        ProjectForm(dao, onCreateDone = {
+                            setResult(RESULT_OK)
+                            finish()
+                        })
                     }
                 }
             }
@@ -75,7 +91,7 @@ class CreateProjectActivity : ComponentActivity() {
 }
 
 @Composable
-fun ProjectForm() {
+fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
     val listState = rememberLazyListState()
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -227,7 +243,7 @@ fun ProjectForm() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        startDateShow = true
+                        endDateShow = true
                     }
                     .border(
                         width = 1.dp,
@@ -307,10 +323,16 @@ fun ProjectForm() {
                     status = mStatus.value,
                     startDate = startDate?.let { Date(it) } ?: Date(),
                     endDate = endDate?.let { Date(it) } ?: Date(),
-                    specialRequirements = specialRequirements.filter { it.isSelected },
+                    specialRequirements = specialRequirements.filter { it.isSelected }
+                        .joinToString(",") { it.name },
                     departmentInformation = departmentInformation
                 )
-
+                CoroutineScope(Dispatchers.IO).launch {
+                    dao.insert(
+                        project
+                    )
+                }
+                onCreateDone()
             }) {
                 Text(text = "Create Project")
             }

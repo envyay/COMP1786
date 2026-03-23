@@ -1,18 +1,21 @@
 package com.example.adminapp.models
 
-import kotlinx.serialization.Serializable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.util.Date
 import java.util.UUID
 
+@Entity(tableName = "Projects")
 data class ProjectModel constructor(
-    var id: UUID,
-    var name: String,
-    var description: String,
-    var manager: String,
-    var budget: Double,
-    var status: Int,
-    var startDate: Date,
-    var endDate: Date,
-    var specialRequirements: List<SpecialRequirementModel>?,
-    var departmentInformation: String?
+    @PrimaryKey
+    val id: UUID,
+    val name: String,
+    val description: String,
+    val manager: String,
+    val budget: Double,
+    val status: Int,
+    val startDate: Date,
+    val endDate: Date,
+    val specialRequirements: String?,
+    val departmentInformation: String?
 )
