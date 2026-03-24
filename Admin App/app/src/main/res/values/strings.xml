@@ -2,4 +2,6 @@
     <string name="app_name">Admin App</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_create_project">CreateProjectActivity</string>
+    <string name="title_activity_project_details">ProjectDetails</string>
+    <string name="title_activity_edit_project">EditProjectActivity</string>
 </resources>

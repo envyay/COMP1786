@@ -17,5 +17,11 @@ class Constants {
             SpecialRequirementModel(name = "Parking", isSelected = false),
             SpecialRequirementModel(name = "Meeting Room", isSelected = false),
         );
+
+        val PROJECT_STATUS_MAP: HashMap<Int, ProjectStatus> = hashMapOf(
+            1 to ProjectStatus.ACTIVE,
+            2 to ProjectStatus.COMPLETED,
+            3 to ProjectStatus.ONHOLD
+        );
     }
 }

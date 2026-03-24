@@ -1,8 +1,5 @@
 package com.example.adminapp
 
-import android.R.attr.label
-import android.R.attr.singleLine
-import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,29 +21,30 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.room.Room
+import com.example.adminapp.common.Constants
 import com.example.adminapp.common.ProjectStatus
 import com.example.adminapp.dao.ProjectDao
 import com.example.adminapp.database.AppDatabase
@@ -59,13 +56,13 @@ import com.example.adminapp.ui.theme.AdminAppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
-import kotlin.jvm.java
 
-class CreateProjectActivity : ComponentActivity() {
+class EditProjectActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val db = Room.databaseBuilder(
@@ -73,6 +70,8 @@ class CreateProjectActivity : ComponentActivity() {
             AppDatabase::class.java, "project-expense"
         ).build()
         val dao = db.projectDao()
+
+        val projectId = intent.getStringExtra("project_id")
         enableEdgeToEdge()
         setContent {
             AdminAppTheme {
@@ -80,7 +79,7 @@ class CreateProjectActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
                         PrimaryTopBar(
-                            title = "Create Project",
+                            title =  "Update Project",
                             showNavigationIcon = true,
                             onBackClick = {
                                 finish()
@@ -88,7 +87,7 @@ class CreateProjectActivity : ComponentActivity() {
                     },
                 ) { innerPadding ->
                     Column(modifier = Modifier.padding(innerPadding)) {
-                        ProjectForm(dao, onCreateDone = {
+                        EditProjectForm(projectId, dao = dao, onEditDone = {
                             setResult(RESULT_OK)
                             finish()
                         })
@@ -100,7 +99,8 @@ class CreateProjectActivity : ComponentActivity() {
 }
 
 @Composable
-fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
+fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit = {}) {
+    var project by remember { mutableStateOf<ProjectModel?>(null) }
     val listState = rememberLazyListState()
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -135,7 +135,35 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
 
 
 
+    LaunchedEffect(Unit) {
+        project = withContext(Dispatchers.IO) {
+            dao.getById(id = projectId ?: "")
+        }
+    }
 
+    LaunchedEffect(project) {
+        project?.let { p ->
+            name = p.name
+            description = p.description
+            manager = p.manager
+            budget = p.budget.toString()
+            mStatus = Constants.PROJECT_STATUS_MAP[p.status] ?: ProjectStatus.ACTIVE
+            startDate = p.startDate.time
+            endDate = p.endDate.time
+            specialRequirements.indices.forEach { index ->
+                val model = specialRequirements[index]
+                specialRequirements[index] = model.copy(
+                    isSelected = p.specialRequirements?.contains(model.name) ?: false
+                )
+            }
+
+//            othersList.clear()
+
+            departmentInformation = p.departmentInformation ?: ""
+
+            // cập nhật specialRequirements nếu muốn
+        }
+    }
     LazyColumn(
         state = listState,
         modifier = Modifier
@@ -317,7 +345,8 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                     // Input
                     OutlinedTextField(
                         value = othersInput,
-                        onValueChange = { othersInput = it
+                        onValueChange = {
+                            othersInput = it
                             if (it.contains(",")) {
                                 it.split(",").map { s -> s.trim() }.forEach { item ->
                                     if (item.isNotBlank() && !othersList.contains(item)) {
@@ -415,7 +444,7 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                         budget.toDoubleOrNull() == null || startDate == null || endDate == null
 
                 val project = ProjectModel(
-                    id = UUID.randomUUID(),
+                    id = project?.id ?: UUID.randomUUID(),
                     name = name,
                     description = description,
                     manager = manager,
@@ -428,13 +457,13 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                     departmentInformation = departmentInformation
                 )
                 CoroutineScope(Dispatchers.IO).launch {
-                    dao.insert(
+                    dao.update(
                         project
                     )
                 }
-                onCreateDone()
+                onEditDone()
             }) {
-                Text(text = "Create Project")
+                Text(text = "Save")
             }
             if (showError) {
                 Text(
@@ -445,9 +474,4 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
             }
         }
     }
-}
-
-fun convertMillisToDate(millis: Long): String {
-    val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-    return formatter.format(Date(millis))
 }

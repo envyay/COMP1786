@@ -80,7 +80,7 @@ fun ProjectsScreen(dao: ProjectDao) {
             }
         }
 
-    };
+    }
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -104,7 +104,11 @@ fun ProjectsScreen(dao: ProjectDao) {
                     items(projects) { project ->
                         ProjectCard(
                             project = project,
-                            onClick = {}
+                            onClick = {
+                                val intent = Intent(context, ProjectDetailsActivity::class.java)
+                                intent.putExtra("project_id", project.id.toString())
+                                context.startActivity(intent)
+                            }
                         )
                     }
                 }
