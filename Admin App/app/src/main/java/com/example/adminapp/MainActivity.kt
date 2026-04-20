@@ -22,9 +22,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,28 +32,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.room.Room
 import com.example.adminapp.dao.ProjectDao
 import com.example.adminapp.database.AppDatabase
 import com.example.adminapp.models.ProjectModel
 import com.example.adminapp.ui.components.PrimaryTopBar
 import com.example.adminapp.ui.theme.AdminAppTheme
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Date
-import java.util.UUID
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "project-expense"
-        ).build()
+                applicationContext,
+                AppDatabase::class.java, "project-expense"
+            ).build()
+
         val dao = db.projectDao()
         enableEdgeToEdge()
         setContent {
@@ -67,6 +63,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ProjectsScreen(dao: ProjectDao) {
     var projects by remember { mutableStateOf(listOf<ProjectModel>()) }
+
+    var isSearching by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+
+    var statusFilter by remember { mutableStateOf<String?>(null) }
+    var managerFilter by remember { mutableStateOf("") }
+    var startDateFilter by remember { mutableStateOf<Long?>(null) }
+    var endDateFilter by remember { mutableStateOf<Long?>(null) }
+
     val scope = rememberCoroutineScope()
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -88,10 +93,54 @@ fun ProjectsScreen(dao: ProjectDao) {
             dao.getAll()
         }
     }
+
+    LaunchedEffect(query, statusFilter, managerFilter, startDateFilter, endDateFilter) {
+        loadProjects(
+            dao,
+            query,
+            statusFilter,
+            managerFilter,
+            startDateFilter,
+            endDateFilter
+        ) {
+            projects = it
+        }
+    }
+
     AdminAppTheme {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            topBar = { PrimaryTopBar(title = "Projects") },
+            topBar = {
+                Column {
+                    PrimaryTopBar(
+                        title = if (isSearching) "" else "Projects",
+                        showNavigationIcon = isSearching,
+                        showSearchIcon = true,
+                        onSearchClick = {
+                            isSearching = true
+                        },
+                        onBackClick = {
+                            if (isSearching) {
+                                isSearching = false
+                                query = ""
+                            }
+                        }
+                    )
+
+                    // 👇 Search box
+                    if (isSearching) {
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = { query = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            placeholder = { Text("Search...") },
+                            singleLine = true
+                        )
+                    }
+                }
+            },
             floatingActionButton = {
                 CreateButton(onClick = {
                     val intent = Intent(context, CreateProjectActivity::class.java)
@@ -107,7 +156,8 @@ fun ProjectsScreen(dao: ProjectDao) {
                             onClick = {
                                 val intent = Intent(context, ProjectDetailsActivity::class.java)
                                 intent.putExtra("project_id", project.id.toString())
-                                context.startActivity(intent)
+//                                context.startActivity(intent)
+                                launcher.launch(intent)
                             }
                         )
                     }
@@ -155,6 +205,31 @@ fun ProjectCard(
         Text(text = "Budget: ${project.budget}")
         Text(text = "Status: ${project.status}")
         Text(text = "Date: ${project.startDate} - ${project.endDate}")
+    }
+}
+
+
+fun loadProjects(
+    dao: ProjectDao,
+    query: String,
+    status: String?,
+    manager: String?,
+    startDate: Long?,
+    endDate: Long?,
+    onResult: (List<ProjectModel>) -> Unit
+) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val result = dao.searchAdvanced(
+            query = if (query.isBlank()) null else query,
+            status = status,
+            manager = manager,
+            startDate = startDate,
+            endDate = endDate
+        )
+
+        withContext(Dispatchers.Main) {
+            onResult(result)
+        }
     }
 }
 

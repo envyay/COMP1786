@@ -1,8 +1,5 @@
 package com.example.adminapp
 
-import android.R.attr.label
-import android.R.attr.singleLine
-import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -51,6 +48,7 @@ import androidx.room.Room
 import com.example.adminapp.common.ProjectStatus
 import com.example.adminapp.dao.ProjectDao
 import com.example.adminapp.database.AppDatabase
+import com.example.adminapp.helper.FirebaseRepo
 import com.example.adminapp.models.ProjectModel
 import com.example.adminapp.models.SpecialRequirementModel
 import com.example.adminapp.ui.components.DatePickerModal
@@ -122,6 +120,7 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
             SpecialRequirementModel(name = "Catering", isSelected = false),
             SpecialRequirementModel(name = "Parking", isSelected = false),
             SpecialRequirementModel(name = "Meeting Room", isSelected = false),
+            SpecialRequirementModel(name = "Others", isSelected = false)
         )
     }
     val othersList = remember { mutableStateListOf<String>() }
@@ -131,9 +130,6 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
     var departmentInformation by remember { mutableStateOf("") }
 
     var showError by remember { mutableStateOf(false) }
-
-
-
 
 
     LazyColumn(
@@ -298,13 +294,24 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                     FilterChip(
                         selected = model.isSelected,
                         onClick = {
-                            specialRequirements[index] = model.copy(isSelected = !model.isSelected)
+                            specialRequirements[index] =
+                                model.copy(isSelected = !model.isSelected)
                         },
-                        label = { Text(model.name) }
+                        label = { Text(model.name) },
+                        leadingIcon = if (model.isSelected) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Done,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else null
                     )
                 }
 
-                // Chip Others toggle
+                Spacer(modifier = Modifier.height(8.dp))
+
                 FilterChip(
                     selected = othersSelected,
                     onClick = { othersSelected = !othersSelected },
@@ -314,10 +321,10 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                 if (othersSelected) {
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Input
                     OutlinedTextField(
                         value = othersInput,
-                        onValueChange = { othersInput = it
+                        onValueChange = {
+                            othersInput = it
                             if (it.contains(",")) {
                                 it.split(",").map { s -> s.trim() }.forEach { item ->
                                     if (item.isNotBlank() && !othersList.contains(item)) {
@@ -330,9 +337,7 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                         label = { Text("Type and press Enter or ','") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            imeAction = ImeAction.Done
-                        ),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 if (othersInput.isNotBlank()) {
@@ -345,14 +350,13 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Hiển thị các chip đã nhập
-                    FlowRow( // cần import accompanist hoặc material3 experimental
+                    FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         othersList.forEachIndexed { index, item ->
                             AssistChip(
-                                onClick = { },
+                                onClick = {},
                                 label = { Text(item) },
                                 trailingIcon = {
                                     Icon(
@@ -368,35 +372,6 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                     }
                 }
             }
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .border(
-//                        width = 1.dp,
-//                        color = Color.Gray,
-//                        shape = RoundedCornerShape(4.dp)
-//                    )
-//                    .padding(horizontal = 16.dp, vertical = 16.dp)
-//            ) {
-//                specialRequirements.mapIndexed { index, model ->
-//                    FilterChip(
-//                        selected = model.isSelected,
-//                        onClick = {
-//                            specialRequirements[index] = model.copy(isSelected = !model.isSelected)
-//                        },
-//                        label = { Text(text = model.name) },
-//                        leadingIcon = if (model.isSelected) {
-//                            {
-//                                Icon(
-//                                    imageVector = Icons.Filled.Done,
-//                                    contentDescription = null,
-//                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
-//                                )
-//                            }
-//                        } else null
-//                    )
-//                }
-//            }
         }
 
 
@@ -420,17 +395,19 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                     description = description,
                     manager = manager,
                     budget = budget.toDoubleOrNull() ?: 0.0,
-                    status = mStatus.value,
+                    status = mStatus.label,
                     startDate = startDate?.let { Date(it) } ?: Date(),
                     endDate = endDate?.let { Date(it) } ?: Date(),
-                    specialRequirements = specialRequirements.filter { it.isSelected }
+                    specialRequirements = specialRequirements
+                        .filter { it.isSelected }
                         .joinToString(",") { it.name },
+
+                    othersList = othersList.joinToString(","),
                     departmentInformation = departmentInformation
                 )
                 CoroutineScope(Dispatchers.IO).launch {
-                    dao.insert(
-                        project
-                    )
+                    dao.insert(project)
+                    FirebaseRepo.upsert(project)
                 }
                 onCreateDone()
             }) {

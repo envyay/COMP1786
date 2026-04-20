@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -37,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.room.Room
 import com.example.adminapp.common.Constants
 import com.example.adminapp.database.AppDatabase
+import com.example.adminapp.helper.FirebaseRepo
 import com.example.adminapp.models.ProjectModel
 import com.example.adminapp.ui.components.PrimaryTopBar
 import com.example.adminapp.ui.theme.AdminAppTheme
@@ -44,6 +44,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.jvm.java
 
 class ProjectDetailsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,59 +89,82 @@ class ProjectDetailsActivity : ComponentActivity() {
                             })
                     },
                 ) { innerPadding ->
-                    Column(
+                    LazyColumn(
                         modifier = Modifier
+                            .fillMaxSize()
                             .padding(innerPadding)
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        DetailItem("Project Name", project?.name ?: "")
-                        DetailItem("Description", project?.description ?: "")
-                        DetailItem("Manager", project?.manager ?: "")
-                        DetailItem("Budget", "$${project?.budget}")
-                        DetailItem("Start Date", project?.startDate.toString())
-                        DetailItem("End Date", project?.endDate.toString())
+                        item { DetailItem("Project Name", project?.name ?: "") }
+                        item { DetailItem("Description", project?.description ?: "") }
+                        item { DetailItem("Manager", project?.manager ?: "") }
+                        item { DetailItem("Budget", "$${project?.budget}") }
+                        item { DetailItem("Start Date", project?.startDate.toString()) }
+                        item { DetailItem("End Date", project?.endDate.toString()) }
 //                        DetailItem("Special Requirements", project?.specialRequirements ?: "")
-                        DetailItem(
-                            "Department Information",
-                            project?.departmentInformation ?: ""
-                        )
-                        DetailItem(
-                            "Status",
-                            Constants.PROJECT_STATUS_MAP[project?.status]?.label ?: ""
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "Special Requirements",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            project?.specialRequirements?.split(",")?.forEach {
-                                AssistChip(
-                                    onClick = {},
-                                    label = { Text(text = it) }
-                                )
+                        item {
+                            DetailItem(
+                                "Department Information",
+                                project?.departmentInformation ?: ""
+                            )
+                        }
+                        item {
+                            DetailItem(
+                                "Status",
+                                Constants.PROJECT_STATUS_MAP[project?.status]?.label ?: ""
+                            )
+                        }
+                        item { Spacer(modifier = Modifier.height(12.dp)) }
+                        item {
+                            Text(
+                                text = "Special Requirements",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                        item { Spacer(modifier = Modifier.height(8.dp)) }
+                        item {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                project?.specialRequirements?.split(",")?.forEach {
+                                    AssistChip(
+                                        onClick = {},
+                                        label = { Text(text = it) }
+                                    )
+                                }
                             }
                         }
+                        item { Spacer(modifier = Modifier.height(12.dp)) }
 
-                        ActionButton(
-                            onEdit = {
-                                val intent = Intent(context, EditProjectActivity::class.java)
-                                intent.putExtra("project_id", project?.id.toString())
-                                editProjectLauncher.launch(intent)
-                            },
-                            onDelete = {
-                                dao.deleteById(id = project?.id.toString())
-                                finish()
-                            }
-                        )
+                        item {
+                            ActionButton(
+                                onEdit = {
+                                    val intent = Intent(context, EditProjectActivity::class.java)
+                                    intent.putExtra("project_id", project?.id.toString())
+                                    editProjectLauncher.launch(intent)
+                                },
+                                onViewExpense = {
+                                    val intent = Intent(context, ExpenseListActivity::class.java)
+                                    intent.putExtra("project_id", project?.id.toString())
+                                    context.startActivity(intent)
+                                },
+                                onDelete = {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        project?.let {
+                                            dao.deleteById(id = it.id.toString())
+                                            FirebaseRepo.delete(it.id.toString())
+                                        }
+
+                                        withContext(Dispatchers.Main) {
+                                            setResult(RESULT_OK)
+                                            finish()
+                                        }
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -151,36 +175,34 @@ class ProjectDetailsActivity : ComponentActivity() {
 @Composable
 fun DetailItem(label: String, value: String) {
     Column(modifier = Modifier.padding(vertical = 6.dp)) {
-        LazyColumn() {
-            item {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color.Gray
-                )
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = Color.Gray
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
 
 @Composable
-fun ActionButton(onEdit: () -> Unit = {}, onDelete: () -> Unit = {}) {
+fun ActionButton(onEdit: () -> Unit = {}, onViewExpense: () -> Unit = {}, onDelete: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start)
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start)
     ) {
 
         Button(onClick = onEdit) {
             Text(text = "Edit")
         }
-        Spacer(modifier = Modifier.width(16.dp))
 
+        Button(onClick = onViewExpense) {
+            Text(text = "View Expense")
+        }
         Button(onClick = onDelete) {
             Text(text = "Delete")
         }

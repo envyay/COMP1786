@@ -12,6 +12,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AdminApp">
         <activity
+            android:name=".AddExpenseActivity"
+            android:exported="false"
+            android:label="@string/title_activity_add_expense"
+            android:theme="@style/Theme.AdminApp" />
+        <activity
+            android:name=".ExpenseListActivity"
+            android:exported="false"
+            android:label="@string/title_activity_expense_list"
+            android:theme="@style/Theme.AdminApp" />
+        <activity
             android:name=".EditProjectActivity"
             android:exported="false"
             android:label="@string/title_activity_edit_project"

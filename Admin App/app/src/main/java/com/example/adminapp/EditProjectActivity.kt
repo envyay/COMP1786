@@ -37,7 +37,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
@@ -57,9 +56,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import java.util.UUID
 
 class EditProjectActivity : ComponentActivity() {
@@ -156,7 +153,10 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
                     isSelected = p.specialRequirements?.contains(model.name) ?: false
                 )
             }
-
+            othersList.clear()
+            p.othersList?.split(",")?.map { it.trim() }?.forEach {
+                if (it.isNotBlank()) othersList.add(it)
+            }
 //            othersList.clear()
 
             departmentInformation = p.departmentInformation ?: ""
@@ -449,11 +449,12 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
                     description = description,
                     manager = manager,
                     budget = budget.toDoubleOrNull() ?: 0.0,
-                    status = mStatus.value,
+                    status = mStatus.label,
                     startDate = startDate?.let { Date(it) } ?: Date(),
                     endDate = endDate?.let { Date(it) } ?: Date(),
                     specialRequirements = specialRequirements.filter { it.isSelected }
                         .joinToString(",") { it.name },
+                    othersList = othersList.joinToString(","),
                     departmentInformation = departmentInformation
                 )
                 CoroutineScope(Dispatchers.IO).launch {

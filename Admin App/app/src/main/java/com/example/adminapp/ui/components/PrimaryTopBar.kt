@@ -2,6 +2,7 @@ package com.example.adminapp.ui.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -14,7 +15,9 @@ import androidx.compose.runtime.Composable
 fun PrimaryTopBar(
     title: String,
     onBackClick: () -> Unit = {},
-    showNavigationIcon: Boolean = false
+    showNavigationIcon: Boolean = false,
+    onSearchClick: () -> Unit = {},
+    showSearchIcon: Boolean = false
 ) {
     CenterAlignedTopAppBar(
         title = { Text(text = title) },
@@ -27,5 +30,16 @@ fun PrimaryTopBar(
                     )
                 }
             }
-        })
+        },
+        actions = {
+            if (showSearchIcon) {
+                IconButton(onClick = onSearchClick) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search"
+                    )
+                }
+            }
+        }
+    )
 }

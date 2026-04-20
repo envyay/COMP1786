@@ -13,9 +13,10 @@ data class ProjectModel constructor(
     val description: String,
     val manager: String,
     val budget: Double,
-    val status: Int,
+    val status: String,
     val startDate: Date,
     val endDate: Date,
     val specialRequirements: String?,
+    val othersList: String?,
     val departmentInformation: String?
 )
