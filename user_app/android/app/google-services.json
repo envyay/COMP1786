@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "650234687094",
+    "project_id": "project-expense-tracker-45ac5",
+    "storage_bucket": "project-expense-tracker-45ac5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:650234687094:android:cc80124a505c8ec9ce7957",
+        "android_client_info": {
+          "package_name": "com.companyname.userapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCe7_ThTS3faDI2e9fGAFeXAbrzAWVEylI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:650234687094:android:7c475b4596458affce7957",
+        "android_client_info": {
+          "package_name": "com.companyname.userapp.user_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCe7_ThTS3faDI2e9fGAFeXAbrzAWVEylI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:650234687094:android:20dca9196032cf45ce7957",
+        "android_client_info": {
+          "package_name": "com.example.adminapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCe7_ThTS3faDI2e9fGAFeXAbrzAWVEylI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
