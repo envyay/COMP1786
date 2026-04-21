@@ -21,6 +21,8 @@ import com.example.adminapp.common.PaymentMethods
 import com.example.adminapp.common.TypeOfExpenses
 import com.example.adminapp.dao.ExpenseDao
 import com.example.adminapp.database.AppDatabase
+import com.example.adminapp.helper.firestore.ExpenseRepo
+import com.example.adminapp.helper.firestore.ProjectRepo
 import com.example.adminapp.models.ExpenseModel
 import com.example.adminapp.ui.components.DatePickerModal
 import com.example.adminapp.ui.components.PrimaryTopBar
@@ -81,7 +83,7 @@ fun AddExpenseForm(
     var amount by remember { mutableStateOf("") }
     var currency by remember { mutableStateOf("") }
 
-    var typeOfExpenseExpanded by remember {mutableStateOf(false)}
+    var typeOfExpenseExpanded by remember { mutableStateOf(false) }
     var typeOfExpense by remember { mutableStateOf(TypeOfExpenses.MISCELLANEOUS) }
 
     var paymentStatusExpanded by remember { mutableStateOf(false) }
@@ -339,40 +341,39 @@ fun AddExpenseForm(
                 onClick = {
 
                     CoroutineScope(Dispatchers.IO).launch {
-
+                        var expense: ExpenseModel?;
                         if (isEditMode) {
-                            dao.update(
-                                ExpenseModel(
-                                    id = expenseId!!,
-                                    projectId = projectId,
-                                    amount = amount.toDouble(),
-                                    currency = currency,
-                                    type = typeOfExpense.label,
-                                    date = Date(date!!),
-                                    paymentMethod = paymentMethod.value,
-                                    claimant = claimant,
-                                    paymentStatus = paymentStatus.value,
-                                    description = description,
-                                    location = location
-                                )
+                            expense = ExpenseModel(
+                                id = expenseId!!,
+                                projectId = projectId,
+                                amount = amount.toDouble(),
+                                currency = currency,
+                                type = typeOfExpense.label,
+                                date = Date(date!!),
+                                paymentMethod = paymentMethod.value,
+                                claimant = claimant,
+                                paymentStatus = paymentStatus.value,
+                                description = description,
+                                location = location
                             )
+                            dao.update(expense)
                         } else {
-                            dao.insert(
-                                ExpenseModel(
-                                    id = UUID.randomUUID(),
-                                    projectId = projectId,
-                                    amount = amount.toDouble(),
-                                    currency = currency,
-                                    type = typeOfExpense.label,
-                                    date = Date(date!!),
-                                    paymentMethod = paymentMethod.value,
-                                    claimant = claimant,
-                                    paymentStatus = paymentStatus.value,
-                                    description = description,
-                                    location = location
-                                )
+                            expense = ExpenseModel(
+                                id = UUID.randomUUID(),
+                                projectId = projectId,
+                                amount = amount.toDouble(),
+                                currency = currency,
+                                type = typeOfExpense.label,
+                                date = Date(date!!),
+                                paymentMethod = paymentMethod.value,
+                                claimant = claimant,
+                                paymentStatus = paymentStatus.value,
+                                description = description,
+                                location = location
                             )
+                            dao.insert(expense)
                         }
+                        ExpenseRepo.upsert(expense)
                         withContext(Dispatchers.Main) {
                             onCreateDone()
                         }

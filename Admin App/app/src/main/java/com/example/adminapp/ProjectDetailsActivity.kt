@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.room.Room
 import com.example.adminapp.common.Constants
 import com.example.adminapp.database.AppDatabase
-import com.example.adminapp.helper.FirebaseRepo
+import com.example.adminapp.helper.firestore.ProjectRepo
 import com.example.adminapp.models.ProjectModel
 import com.example.adminapp.ui.components.PrimaryTopBar
 import com.example.adminapp.ui.theme.AdminAppTheme
@@ -154,7 +154,7 @@ class ProjectDetailsActivity : ComponentActivity() {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         project?.let {
                                             dao.deleteById(id = it.id.toString())
-                                            FirebaseRepo.delete(it.id.toString())
+                                            ProjectRepo.delete(it.id.toString())
                                         }
 
                                         withContext(Dispatchers.Main) {

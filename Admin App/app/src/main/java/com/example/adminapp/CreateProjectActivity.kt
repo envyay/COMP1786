@@ -48,7 +48,7 @@ import androidx.room.Room
 import com.example.adminapp.common.ProjectStatus
 import com.example.adminapp.dao.ProjectDao
 import com.example.adminapp.database.AppDatabase
-import com.example.adminapp.helper.FirebaseRepo
+import com.example.adminapp.helper.firestore.ProjectRepo
 import com.example.adminapp.models.ProjectModel
 import com.example.adminapp.models.SpecialRequirementModel
 import com.example.adminapp.ui.components.DatePickerModal
@@ -407,7 +407,7 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                 )
                 CoroutineScope(Dispatchers.IO).launch {
                     dao.insert(project)
-                    FirebaseRepo.upsert(project)
+                    ProjectRepo.upsert(project)
                 }
                 onCreateDone()
             }) {
