@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.room.Room
-import com.example.adminapp.common.Constants
 import com.example.adminapp.database.AppDatabase
 import com.example.adminapp.helper.firestore.ProjectRepo
 import com.example.adminapp.models.ProjectModel
@@ -63,7 +62,6 @@ class ProjectDetailsActivity : ComponentActivity() {
                 contract = ActivityResultContracts.StartActivityForResult()
             ) { result ->
                 if (result.resultCode == RESULT_OK) {
-                    // Reload project từ DB
                     CoroutineScope(Dispatchers.IO).launch {
                         val updated = dao.getById(id = projectId ?: "")
                         withContext(Dispatchers.Main) {
@@ -102,7 +100,6 @@ class ProjectDetailsActivity : ComponentActivity() {
                         item { DetailItem("Budget", "$${project?.budget}") }
                         item { DetailItem("Start Date", project?.startDate.toString()) }
                         item { DetailItem("End Date", project?.endDate.toString()) }
-//                        DetailItem("Special Requirements", project?.specialRequirements ?: "")
                         item {
                             DetailItem(
                                 "Department Information",
@@ -112,7 +109,7 @@ class ProjectDetailsActivity : ComponentActivity() {
                         item {
                             DetailItem(
                                 "Status",
-                                Constants.PROJECT_STATUS_MAP[project?.status]?.label ?: ""
+                                project?.status ?: ""
                             )
                         }
                         item { Spacer(modifier = Modifier.height(12.dp)) }

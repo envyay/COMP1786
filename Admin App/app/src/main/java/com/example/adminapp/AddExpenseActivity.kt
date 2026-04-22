@@ -22,7 +22,6 @@ import com.example.adminapp.common.TypeOfExpenses
 import com.example.adminapp.dao.ExpenseDao
 import com.example.adminapp.database.AppDatabase
 import com.example.adminapp.helper.firestore.ExpenseRepo
-import com.example.adminapp.helper.firestore.ProjectRepo
 import com.example.adminapp.models.ExpenseModel
 import com.example.adminapp.ui.components.DatePickerModal
 import com.example.adminapp.ui.components.PrimaryTopBar
@@ -47,14 +46,14 @@ class AddExpenseActivity : ComponentActivity() {
 
         val projectIdString = intent.getStringExtra("project_id") ?: ""
         val expenseIdString = intent.getStringExtra("expense_id") ?: ""
-
+        val mtitle = if (expenseIdString.isNotEmpty()) "Edit Expense" else "Add Expense"
         setContent {
             AdminAppTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
                         PrimaryTopBar(
-                            title = "Add Expense",
+                            title = mtitle,
                             showNavigationIcon = true,
                             onBackClick = {
                                 finish()
@@ -140,12 +139,6 @@ fun AddExpenseForm(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        item {
-            Text(
-                text = if (isEditMode) "Edit Expense" else "Add Expense",
-                style = MaterialTheme.typography.headlineMedium
-            )
-        }
         item {
             OutlinedTextField(
                 value = amount,
@@ -341,7 +334,7 @@ fun AddExpenseForm(
                 onClick = {
 
                     CoroutineScope(Dispatchers.IO).launch {
-                        var expense: ExpenseModel?;
+                        var expense: ExpenseModel?
                         if (isEditMode) {
                             expense = ExpenseModel(
                                 id = expenseId!!,

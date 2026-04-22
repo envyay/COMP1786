@@ -12,7 +12,7 @@ import com.example.adminapp.models.ProjectModel
 
 @Database(
     entities = [ProjectModel::class,
-        ExpenseModel::class], version = 3
+        ExpenseModel::class], version = 4
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

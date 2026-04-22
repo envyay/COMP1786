@@ -17,6 +17,5 @@ data class ProjectModel constructor(
     val startDate: Date,
     val endDate: Date,
     val specialRequirements: String?,
-    val othersList: String?,
     val departmentInformation: String?
 )

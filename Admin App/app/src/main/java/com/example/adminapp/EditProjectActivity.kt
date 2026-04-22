@@ -130,8 +130,6 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
     var showError by remember { mutableStateOf(false) }
 
 
-
-
     LaunchedEffect(Unit) {
         project = withContext(Dispatchers.IO) {
             dao.getById(id = projectId ?: "")
@@ -153,15 +151,9 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
                     isSelected = p.specialRequirements?.contains(model.name) ?: false
                 )
             }
-            othersList.clear()
-            p.othersList?.split(",")?.map { it.trim() }?.forEach {
-                if (it.isNotBlank()) othersList.add(it)
-            }
-//            othersList.clear()
 
             departmentInformation = p.departmentInformation ?: ""
 
-            // cập nhật specialRequirements nếu muốn
         }
     }
     LazyColumn(
@@ -321,7 +313,6 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
                     .padding(16.dp)
             ) {
 
-                // Chip có sẵn
                 specialRequirements.forEachIndexed { index, model ->
                     FilterChip(
                         selected = model.isSelected,
@@ -332,7 +323,6 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
                     )
                 }
 
-                // Chip Others toggle
                 FilterChip(
                     selected = othersSelected,
                     onClick = { othersSelected = !othersSelected },
@@ -342,7 +332,6 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
                 if (othersSelected) {
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Input
                     OutlinedTextField(
                         value = othersInput,
                         onValueChange = {
@@ -374,8 +363,7 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Hiển thị các chip đã nhập
-                    FlowRow( // cần import accompanist hoặc material3 experimental
+                    FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -397,35 +385,6 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
                     }
                 }
             }
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .border(
-//                        width = 1.dp,
-//                        color = Color.Gray,
-//                        shape = RoundedCornerShape(4.dp)
-//                    )
-//                    .padding(horizontal = 16.dp, vertical = 16.dp)
-//            ) {
-//                specialRequirements.mapIndexed { index, model ->
-//                    FilterChip(
-//                        selected = model.isSelected,
-//                        onClick = {
-//                            specialRequirements[index] = model.copy(isSelected = !model.isSelected)
-//                        },
-//                        label = { Text(text = model.name) },
-//                        leadingIcon = if (model.isSelected) {
-//                            {
-//                                Icon(
-//                                    imageVector = Icons.Filled.Done,
-//                                    contentDescription = null,
-//                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
-//                                )
-//                            }
-//                        } else null
-//                    )
-//                }
-//            }
         }
 
 
@@ -454,7 +413,6 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
                     endDate = endDate?.let { Date(it) } ?: Date(),
                     specialRequirements = specialRequirements.filter { it.isSelected }
                         .joinToString(",") { it.name },
-                    othersList = othersList.joinToString(","),
                     departmentInformation = departmentInformation
                 )
                 CoroutineScope(Dispatchers.IO).launch {

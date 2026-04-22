@@ -8,7 +8,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,18 +17,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.room.Room
@@ -123,9 +119,6 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
             SpecialRequirementModel(name = "Others", isSelected = false)
         )
     }
-    val othersList = remember { mutableStateListOf<String>() }
-    var othersInput by remember { mutableStateOf("") }
-    var othersSelected by remember { mutableStateOf(false) }
 
     var departmentInformation by remember { mutableStateOf("") }
 
@@ -197,6 +190,13 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                     )
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
+                Text(
+                    text = "Start Date",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Text(text = mStatus.label)
             }
 
@@ -230,6 +230,13 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                     )
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
+                Text(
+                    text = "Start Date",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Text(text = startDate?.let { convertMillisToDate(it) } ?: "Start Date")
                 if (startDateShow) {
                     DatePickerModal(
@@ -261,6 +268,13 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                     )
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
+                Text(
+                    text = "End Date",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Text(text = endDate?.let { convertMillisToDate(it) } ?: "End Date")
                 if (endDateShow) {
                     DatePickerModal(
@@ -288,8 +302,13 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                     )
                     .padding(16.dp)
             ) {
+                Text(
+                    text = "Special Requirements",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // Chip có sẵn
                 specialRequirements.forEachIndexed { index, model ->
                     FilterChip(
                         selected = model.isSelected,
@@ -311,66 +330,6 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-
-                FilterChip(
-                    selected = othersSelected,
-                    onClick = { othersSelected = !othersSelected },
-                    label = { Text("Others") }
-                )
-
-                if (othersSelected) {
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    OutlinedTextField(
-                        value = othersInput,
-                        onValueChange = {
-                            othersInput = it
-                            if (it.contains(",")) {
-                                it.split(",").map { s -> s.trim() }.forEach { item ->
-                                    if (item.isNotBlank() && !othersList.contains(item)) {
-                                        othersList.add(item)
-                                    }
-                                }
-                                othersInput = ""
-                            }
-                        },
-                        label = { Text("Type and press Enter or ','") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                if (othersInput.isNotBlank()) {
-                                    othersList.add(othersInput.trim())
-                                    othersInput = ""
-                                }
-                            }
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        othersList.forEachIndexed { index, item ->
-                            AssistChip(
-                                onClick = {},
-                                label = { Text(item) },
-                                trailingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Remove",
-                                        modifier = Modifier.clickable {
-                                            othersList.removeAt(index)
-                                        }
-                                    )
-                                }
-                            )
-                        }
-                    }
-                }
             }
         }
 
@@ -402,7 +361,6 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                         .filter { it.isSelected }
                         .joinToString(",") { it.name },
 
-                    othersList = othersList.joinToString(","),
                     departmentInformation = departmentInformation
                 )
                 CoroutineScope(Dispatchers.IO).launch {

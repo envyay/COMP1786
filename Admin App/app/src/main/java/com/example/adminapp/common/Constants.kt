@@ -43,9 +43,9 @@ class Constants {
         );
 
         val PROJECT_STATUS_MAP = mapOf(
-            "ACTIVE" to ProjectStatus.ACTIVE,
-            "IN_PROGRESS" to ProjectStatus.COMPLETED,
-            "DONE" to ProjectStatus.ONHOLD
+            ProjectStatus.ACTIVE.label to ProjectStatus.ACTIVE,
+            ProjectStatus.COMPLETED.label to ProjectStatus.COMPLETED,
+            ProjectStatus.ONHOLD.label to ProjectStatus.ONHOLD
         );
 
         val EXPENSE_STATUS_MAP: HashMap<Int, ExpenseStatus> = hashMapOf(

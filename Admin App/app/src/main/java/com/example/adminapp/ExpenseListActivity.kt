@@ -55,7 +55,6 @@ class ExpenseListActivity : ComponentActivity() {
                 }
             }
 
-            // load lần đầu
             LaunchedEffect(projectId) {
                 loadExpenses(dao, projectId) {
                     expenseList = it
@@ -95,7 +94,6 @@ class ExpenseListActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
 
-                        // ✅ FIX: items dùng list
                         items(expenseList) { expense ->
 
                             ExpenseItem(
@@ -153,7 +151,6 @@ fun ExpenseItem(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-//            Text("ID: ${expense.id}", style = MaterialTheme.typography.labelMedium)
 
             Spacer(modifier = Modifier.height(4.dp))
 
