@@ -9,13 +9,16 @@ environment:
 
 dependencies:
   flutter:
-    sdk: flutter
+    sdk: flutter  # Phải nằm thụt lùi vào bên dưới 'flutter'
+
+  # Thêm thư viện dotenv vào đây nếu bạn làm theo hướng dẫn trước
+  flutter_dotenv: ^5.1.0
+
   intl: ^0.20.2
   uuid: ^4.5.3
   json_annotation: ^4.11.0
   firebase_core: ^4.7.0
   cloud_firestore: ^6.3.0
-
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
@@ -27,3 +30,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Khai báo file .env nằm ở đây, không phải ở mục dependencies
+  assets:
+    - .env
