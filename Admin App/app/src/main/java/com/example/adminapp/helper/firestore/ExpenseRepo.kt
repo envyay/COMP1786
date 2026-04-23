@@ -1,10 +1,8 @@
 package com.example.adminapp.helper.firestore
 
 import com.example.adminapp.models.ExpenseModel
-import com.example.adminapp.models.ProjectModel
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-import java.util.UUID
 
 object ExpenseRepo {
     private val db = Firebase.firestore

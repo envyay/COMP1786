@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:user_app/contants/contants.dart';
+import 'package:uuid/uuid.dart';
 
 import '../models/expense_model.dart';
 import '../repositories/expense_repo.dart';
@@ -16,7 +17,8 @@ class AddExpensePage extends StatefulWidget {
 class _AddExpensePageState extends State<AddExpensePage> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _budgetController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _currencyController = TextEditingController();
   final TextEditingController _claimantController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
@@ -61,9 +63,15 @@ class _AddExpensePageState extends State<AddExpensePage> {
               ),
 
               _buildInputField(
-                'Budget',
-                _budgetController,
+                'Amount',
+                _amountController,
                 keyboardType: TextInputType.number,
+              ),
+
+              _buildInputField(
+                'Currency',
+                _currencyController,
+                keyboardType: TextInputType.text,
               ),
 
               _buildInputField('Claimant', _claimantController),
@@ -106,9 +114,11 @@ class _AddExpensePageState extends State<AddExpensePage> {
                     final expenseRepo = ExpenseRepo();
                     expenseRepo.addExpense(
                       ExpenseModel(
+                        id: Uuid().v4(),
                         projectId: widget.projectId,
                         type: _selectedType,
-                        budget: double.parse(_budgetController.text),
+                        amount: double.parse(_amountController.text),
+                        currency: _currencyController.text,
                         claimant: _claimantController.text,
                         paymentStatus: statuses.indexOf(_selectedStatus!),
                         paymentMethod: methods.indexOf(_selectedMethod!),

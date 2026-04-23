@@ -47,11 +47,5 @@ class Constants {
             ProjectStatus.COMPLETED.label to ProjectStatus.COMPLETED,
             ProjectStatus.ONHOLD.label to ProjectStatus.ONHOLD
         );
-
-        val EXPENSE_STATUS_MAP: HashMap<Int, ExpenseStatus> = hashMapOf(
-            1 to ExpenseStatus.PENDING,
-            2 to ExpenseStatus.APPROVED,
-            3 to ExpenseStatus.REJECTED
-        );
     }
 }

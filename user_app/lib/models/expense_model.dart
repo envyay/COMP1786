@@ -8,7 +8,7 @@ part 'expense_model.g.dart';
 @JsonSerializable()
 class ExpenseModel {
   @UuidConverter() String? id;
-  double? budget;
+  double? amount;
   String? claimant;
   String? currency;
   @TimestampConverter() DateTime? date;
@@ -20,7 +20,7 @@ class ExpenseModel {
 
   ExpenseModel({
     this.id,
-    this.budget,
+    this.amount,
     this.claimant,
     this.currency,
     this.date,

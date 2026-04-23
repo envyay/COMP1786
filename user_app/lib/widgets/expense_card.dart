@@ -27,7 +27,7 @@ class ExpenseCard extends StatelessWidget {
               crossAxisAlignment: .start,
               children: [
                 _buildLabel('Expense Type: ${model.type ?? ''}'),
-                _buildLabel('Budget: ${model.budget ?? ''}'),
+                _buildLabel('Amount: ${model.amount ?? ''}'),
                 _buildLabel('Claimant: ${model.claimant ?? ''}'),
                 _buildLabel('Payment Status: ${statuses.elementAtOrNull(model.paymentStatus ?? 0) ?? ''}'),
                 _buildLabel('Payment Method: ${methods.elementAtOrNull(model.paymentMethod ?? 0)  ?? ''}'),

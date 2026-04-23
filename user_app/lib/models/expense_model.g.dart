@@ -8,7 +8,7 @@ part of 'expense_model.dart';
 
 ExpenseModel _$ExpenseModelFromJson(Map<String, dynamic> json) => ExpenseModel(
   id: const UuidConverter().fromJson(json['id'] as Map<String, dynamic>?),
-  budget: (json['budget'] as num?)?.toDouble(),
+  amount: (json['amount'] as num?)?.toDouble(),
   claimant: json['claimant'] as String?,
   currency: json['currency'] as String?,
   date: const TimestampConverter().fromJson(json['date'] as Timestamp?),
@@ -24,7 +24,7 @@ ExpenseModel _$ExpenseModelFromJson(Map<String, dynamic> json) => ExpenseModel(
 Map<String, dynamic> _$ExpenseModelToJson(ExpenseModel instance) =>
     <String, dynamic>{
       'id': const UuidConverter().toJson(instance.id),
-      'budget': instance.budget,
+      'amount': instance.amount,
       'claimant': instance.claimant,
       'currency': instance.currency,
       'date': const TimestampConverter().toJson(instance.date),
