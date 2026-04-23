@@ -6,38 +6,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.room.Room
@@ -54,20 +34,21 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
-import kotlin.jvm.java
+import java.util.*
 
 class CreateProjectActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "project-expense"
         ).build()
+
         val dao = db.projectDao()
+
         enableEdgeToEdge()
+
         setContent {
             AdminAppTheme {
                 Scaffold(
@@ -76,16 +57,15 @@ class CreateProjectActivity : ComponentActivity() {
                         PrimaryTopBar(
                             title = "Create Project",
                             showNavigationIcon = true,
-                            onBackClick = {
-                                finish()
-                            })
-                    },
+                            onBackClick = { finish() }
+                        )
+                    }
                 ) { innerPadding ->
                     Column(modifier = Modifier.padding(innerPadding)) {
-                        ProjectForm(dao, onCreateDone = {
+                        ProjectForm(dao) {
                             setResult(RESULT_OK)
                             finish()
-                        })
+                        }
                     }
                 }
             }
@@ -95,120 +75,135 @@ class CreateProjectActivity : ComponentActivity() {
 
 @Composable
 fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
+
     val listState = rememberLazyListState()
+
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var manager by remember { mutableStateOf("") }
     var budget by remember { mutableStateOf("") }
 
     var statusExpanded by remember { mutableStateOf(false) }
-    var mStatus by remember { mutableStateOf(ProjectStatus.ACTIVE) }
+    var mStatus by remember { mutableStateOf<ProjectStatus?>(null) }
 
     var startDateShow by remember { mutableStateOf(false) }
     var startDate by remember { mutableStateOf<Long?>(null) }
+
     var endDateShow by remember { mutableStateOf(false) }
     var endDate by remember { mutableStateOf<Long?>(null) }
-
-    var specialRequirements = remember {
-        mutableStateListOf(
-            SpecialRequirementModel(name = "Projector", isSelected = false),
-            SpecialRequirementModel(name = "Wi-Fi", isSelected = false),
-            SpecialRequirementModel(name = "Catering", isSelected = false),
-            SpecialRequirementModel(name = "Parking", isSelected = false),
-            SpecialRequirementModel(name = "Meeting Room", isSelected = false),
-            SpecialRequirementModel(name = "Others", isSelected = false)
-        )
-    }
 
     var departmentInformation by remember { mutableStateOf("") }
 
     var showError by remember { mutableStateOf(false) }
 
+    val specialRequirements = remember {
+        mutableStateListOf(
+            SpecialRequirementModel("Projector", false),
+            SpecialRequirementModel("Wi-Fi", false),
+            SpecialRequirementModel("Catering", false),
+            SpecialRequirementModel("Parking", false),
+            SpecialRequirementModel("Meeting Room", false),
+            SpecialRequirementModel("Others", false)
+        )
+    }
 
     LazyColumn(
         state = listState,
         modifier = Modifier
-            .padding(horizontal = 16.dp)
+            .padding(16.dp)
             .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+
         item {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
                 value = name,
                 onValueChange = { name = it },
+                modifier = Modifier.fillMaxWidth(),
                 label = { Text("Name") },
-                isError = showError && name.isBlank()
-
+                isError = showError && name.isBlank(),
+                supportingText = {
+                    if (showError && name.isBlank()) Text("Required")
+                }
             )
         }
+
         item {
             OutlinedTextField(
-                maxLines = 4,
-                modifier = Modifier.fillMaxWidth(),
                 value = description,
                 onValueChange = { description = it },
+                modifier = Modifier.fillMaxWidth(),
                 label = { Text("Description") },
-                isError = showError && description.isBlank()
+                maxLines = 4,
+                isError = showError && description.isBlank(),
+                supportingText = {
+                    if (showError && description.isBlank()) Text("Required")
+                }
             )
         }
 
         item {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
                 value = manager,
                 onValueChange = { manager = it },
+                modifier = Modifier.fillMaxWidth(),
                 label = { Text("Manager") },
-                isError = showError && manager.isBlank()
+                isError = showError && manager.isBlank(),
+                supportingText = {
+                    if (showError && manager.isBlank()) Text("Required")
+                }
             )
         }
 
         item {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
                 value = budget,
                 onValueChange = { budget = it },
+                modifier = Modifier.fillMaxWidth(),
                 label = { Text("Budget") },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number
-                ),
-                isError = showError && budget.toDoubleOrNull() == null
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = showError && budget.toDoubleOrNull() == null,
+                supportingText = {
+                    if (showError && budget.toDoubleOrNull() == null) {
+                        Text("Invalid number")
+                    }
+                }
             )
         }
-        item {
 
+        item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        statusExpanded = !statusExpanded
-                    }
+                    .clickable { statusExpanded = true }
                     .border(
-                        width = 1.dp,
-                        color = Color.Gray,
-                        shape = RoundedCornerShape(4.dp)
+                        1.dp,
+                        if (showError && mStatus == null) Color.Red else Color.Gray,
+                        RoundedCornerShape(4.dp)
                     )
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                    .padding(16.dp)
             ) {
                 Text(
-                    text = "Start Date",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    "Status",
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+                Text(mStatus?.label ?: "Select Status")
+            }
 
-                Text(text = mStatus.label)
+            if (showError && mStatus == null) {
+                Text("Required", color = MaterialTheme.colorScheme.error)
             }
 
             DropdownMenu(
                 expanded = statusExpanded,
                 onDismissRequest = { statusExpanded = false }
             ) {
-                ProjectStatus.entries.forEach { status ->
+                ProjectStatus.entries.forEach {
                     DropdownMenuItem(
-                        text = { Text(status.label) },
+                        text = { Text(it.label) },
                         onClick = {
-                            mStatus = status
+                            mStatus = it
                             statusExpanded = false
                         }
                     )
@@ -220,107 +215,92 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        startDateShow = true
-                    }
+                    .clickable { startDateShow = true }
                     .border(
-                        width = 1.dp,
-                        color = Color.Gray,
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
-            ) {
-                Text(
-                    text = "Start Date",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(text = startDate?.let { convertMillisToDate(it) } ?: "Start Date")
-                if (startDateShow) {
-                    DatePickerModal(
-                        onDateSelected = {
-                            startDate = it
-                        },
-                        onDismiss = {
-                            startDateShow = false
-                        })
-                }
-
-            }
-            if (showError && startDate == null) {
-                Text("Required", color = Color.Red)
-            }
-        }
-
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        endDateShow = true
-                    }
-                    .border(
-                        width = 1.dp,
-                        color = Color.Gray,
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
-            ) {
-                Text(
-                    text = "End Date",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(text = endDate?.let { convertMillisToDate(it) } ?: "End Date")
-                if (endDateShow) {
-                    DatePickerModal(
-                        onDateSelected = {
-                            endDate = it
-                        },
-                        onDismiss = {
-                            endDateShow = false
-                        })
-                }
-            }
-            if (showError && endDate == null) {
-                Text("Required", color = Color.Red)
-            }
-        }
-
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        width = 1.dp,
-                        color = Color.Gray,
-                        shape = RoundedCornerShape(4.dp)
+                        1.dp,
+                        if (showError && startDate == null) Color.Red else Color.Gray,
+                        RoundedCornerShape(4.dp)
                     )
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Special Requirements",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    "Start Date",
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+                Text(startDate?.let { convertMillisToDate(it) } ?: "Select Date")
+            }
 
-                specialRequirements.forEachIndexed { index, model ->
+            if (showError && startDate == null) {
+                Text("Required", color = MaterialTheme.colorScheme.error)
+            }
+
+            if (startDateShow) {
+                DatePickerModal(
+                    onDateSelected = { startDate = it },
+                    onDismiss = { startDateShow = false }
+                )
+            }
+        }
+
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { endDateShow = true }
+                    .border(
+                        1.dp,
+                        if (showError && endDate == null) Color.Red else Color.Gray,
+                        RoundedCornerShape(4.dp)
+                    )
+                    .padding(16.dp)
+            ) {
+                Text(
+                    "End Date",
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(endDate?.let { convertMillisToDate(it) } ?: "Select Date")
+            }
+
+            if (showError && endDate == null) {
+                Text("Required", color = MaterialTheme.colorScheme.error)
+            }
+
+            if (endDateShow) {
+                DatePickerModal(
+                    onDateSelected = { endDate = it },
+                    onDismiss = { endDateShow = false }
+                )
+            }
+        }
+
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                    .padding(16.dp)
+            ) {
+                Text(
+                    "Special Requirements",
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                specialRequirements.forEachIndexed { index, item ->
                     FilterChip(
-                        selected = model.isSelected,
+                        selected = item.isSelected,
                         onClick = {
                             specialRequirements[index] =
-                                model.copy(isSelected = !model.isSelected)
+                                item.copy(isSelected = !item.isSelected)
                         },
-                        label = { Text(model.name) },
-                        leadingIcon = if (model.isSelected) {
+                        label = { Text(item.name) },
+                        leadingIcon = if (item.isSelected) {
                             {
                                 Icon(
-                                    imageVector = Icons.Filled.Done,
+                                    Icons.Default.Done,
                                     contentDescription = null,
                                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                                 )
@@ -328,25 +308,37 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                         } else null
                     )
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
             }
         }
 
-
         item {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
                 value = departmentInformation,
                 onValueChange = { departmentInformation = it },
-                label = { Text("DepartmentInformation (optional)") },
+                modifier = Modifier.fillMaxWidth(),
+                label = {
+                    Text(
+                        "Department Information (optional)"
+                    )
+                }
             )
         }
 
         item {
             Button(onClick = {
-                showError = name.isBlank() || description.isBlank() || manager.isBlank() ||
-                        budget.toDoubleOrNull() == null || startDate == null || endDate == null
+
+                val hasError =
+                    name.isBlank() ||
+                            description.isBlank() ||
+                            manager.isBlank() ||
+                            budget.toDoubleOrNull() == null ||
+                            startDate == null ||
+                            endDate == null ||
+                            mStatus == null
+
+                showError = hasError
+
+                if (hasError) return@Button
 
                 val project = ProjectModel(
                     id = UUID.randomUUID(),
@@ -354,28 +346,30 @@ fun ProjectForm(dao: ProjectDao, onCreateDone: () -> Unit = {}) {
                     description = description,
                     manager = manager,
                     budget = budget.toDoubleOrNull() ?: 0.0,
-                    status = mStatus.label,
-                    startDate = startDate?.let { Date(it) } ?: Date(),
-                    endDate = endDate?.let { Date(it) } ?: Date(),
+                    status = mStatus!!.label,
+                    startDate = Date(startDate!!),
+                    endDate = Date(endDate!!),
                     specialRequirements = specialRequirements
                         .filter { it.isSelected }
                         .joinToString(",") { it.name },
-
                     departmentInformation = departmentInformation
                 )
+
                 CoroutineScope(Dispatchers.IO).launch {
                     dao.insert(project)
                     ProjectRepo.upsert(project)
                 }
+
                 onCreateDone()
+
             }) {
-                Text(text = "Create Project")
+                Text("Create Project")
             }
+
             if (showError) {
                 Text(
                     "Please fill all required fields",
-                    color = Color.Red,
-                    modifier = Modifier.padding(top = 8.dp)
+                    color = MaterialTheme.colorScheme.error
                 )
             }
         }

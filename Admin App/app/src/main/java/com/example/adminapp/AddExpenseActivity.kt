@@ -99,7 +99,7 @@ fun AddExpenseForm(
     var location by remember { mutableStateOf("") }
 
     var isEditMode by remember { mutableStateOf(false) }
-
+    var showError by remember { mutableStateOf(false) }
 
     val expenseId = expenseIdString.isNotEmpty().let {
         if (it) UUID.fromString(expenseIdString) else null
@@ -146,14 +146,26 @@ fun AddExpenseForm(
                 label = { Text("Amount") },
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number
-                )
+                ),
+                isError = showError && amount.toDoubleOrNull() == null,
+                supportingText = {
+                    if (showError && amount.toDoubleOrNull() == null) {
+                        Text("Required / Invalid number")
+                    }
+                }
             )
         }
         item {
             OutlinedTextField(
                 value = currency,
                 onValueChange = { currency = it },
-                label = { Text("Currency") }
+                label = { Text("Currency") },
+                isError = showError && currency.isBlank(),
+                supportingText = {
+                    if (showError && currency.isBlank()) {
+                        Text("Required")
+                    }
+                }
             )
         }
         item {
@@ -250,13 +262,21 @@ fun AddExpenseForm(
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
                 Text(
-                    text = "Type of Expenses",
+                    text = "Date",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(text = date?.let { convertMillisToDate(it) } ?: "Date")
+                if (showError && date == null) {
+                    Text(
+                        "Required",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
                 if (dateShow) {
                     DatePickerModal(
                         onDateSelected = {
@@ -312,7 +332,13 @@ fun AddExpenseForm(
             OutlinedTextField(
                 value = claimant,
                 onValueChange = { claimant = it },
-                label = { Text("Claimant") }
+                label = { Text("Claimant") },
+                isError = showError && claimant.isBlank(),
+                supportingText = {
+                    if (showError && claimant.isBlank()) {
+                        Text("Required")
+                    }
+                }
             )
         }
         item {
@@ -332,6 +358,15 @@ fun AddExpenseForm(
         item {
             Button(
                 onClick = {
+                    val hasError =
+                        amount.toDoubleOrNull() == null ||
+                                currency.isBlank() ||
+                                claimant.isBlank() ||
+                                date == null
+
+                    showError = hasError
+
+                    if (hasError) return@Button
 
                     CoroutineScope(Dispatchers.IO).launch {
                         var expense: ExpenseModel?

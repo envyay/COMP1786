@@ -133,11 +133,11 @@ class _AddExpensePageState extends State<AddExpensePage> {
   }
 
   Widget _buildDropdownField(
-    String label,
-    List<String> items,
-    String? selectedValue,
-    Function(String?) onChanged,
-  ) {
+      String label,
+      List<String> items,
+      String? selectedValue,
+      Function(String?) onChanged,
+      ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
@@ -152,6 +152,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
               return DropdownMenuItem<String>(value: value, child: Text(value));
             }).toList(),
             onChanged: onChanged,
+            validator: (value) => value == null ? 'Please select $label' : null,
           ),
         ],
       ),
@@ -159,13 +160,13 @@ class _AddExpensePageState extends State<AddExpensePage> {
   }
 
   Widget _buildInputField(
-    String label,
-    TextEditingController controller, {
-    TextInputType keyboardType = TextInputType.text,
-    bool isReadOnly = false,
-    IconData? suffixIcon,
-    VoidCallback? onTap,
-  }) {
+      String label,
+      TextEditingController controller, {
+        TextInputType keyboardType = TextInputType.text,
+        bool isReadOnly = false,
+        IconData? suffixIcon,
+        VoidCallback? onTap,
+      }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
@@ -181,6 +182,18 @@ class _AddExpensePageState extends State<AddExpensePage> {
             decoration: _inputDecoration('Enter $label').copyWith(
               suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
             ),
+            validator: (value) {
+              if (label == 'Location') {
+                return null;
+              }
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter $label';
+              }
+              if (label == 'Budget' && double.tryParse(value) == null) {
+                return 'Please enter a valid number';
+              }
+              return null;
+            },
           ),
         ],
       ),
