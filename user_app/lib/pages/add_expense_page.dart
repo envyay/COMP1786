@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:user_app/contants/contants.dart';
 
 import '../models/expense_model.dart';
-import '../repositories/expense_repo.dart'; // Thêm thư viện này vào pubspec.yaml để format ngày
+import '../repositories/expense_repo.dart';
 
 class AddExpensePage extends StatefulWidget {
   const AddExpensePage({super.key, required this.projectId});
@@ -16,19 +16,16 @@ class AddExpensePage extends StatefulWidget {
 class _AddExpensePageState extends State<AddExpensePage> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers cho các trường nhập văn bản
   final TextEditingController _budgetController = TextEditingController();
   final TextEditingController _claimantController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
 
-  // Biến lưu trữ giá trị chọn từ Dropdown
   String? _selectedType;
   String? _selectedStatus;
   String? _selectedMethod;
   DateTime? _selectedDate;
 
-  // Hàm hiển thị Date Picker
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -54,7 +51,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
           key: _formKey,
           child: Column(
             children: [
-              // 1. Dropdown cho Expense Type
               _buildDropdownField(
                 'Expense Type',
                 expenseTypes,
@@ -64,17 +60,14 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 },
               ),
 
-              // 2. TextField cho Budget
               _buildInputField(
                 'Budget',
                 _budgetController,
                 keyboardType: TextInputType.number,
               ),
 
-              // 3. TextField cho Claimant
               _buildInputField('Claimant', _claimantController),
 
-              // 4. Dropdown cho Payment Status
               _buildDropdownField(
                 'Payment Status',
                 statuses,
@@ -84,14 +77,12 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 },
               ),
 
-              // 5. Dropdown cho Payment Method
               _buildDropdownField('Payment Method', methods, _selectedMethod, (
                 val,
               ) {
                 setState(() => _selectedMethod = val);
               }),
 
-              // 6. Date Picker Field
               _buildInputField(
                 'Date',
                 _dateController,
@@ -100,7 +91,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 onTap: () => _selectDate(context),
               ),
 
-              // 7. TextField cho Location
               _buildInputField('Location', _locationController),
 
               const SizedBox(height: 30),
@@ -142,7 +132,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
     );
   }
 
-  // Widget tạo Dropdown gọn đẹp
   Widget _buildDropdownField(
     String label,
     List<String> items,
@@ -169,7 +158,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
     );
   }
 
-  // Widget tạo Input Field (Dùng chung cho Text và Date)
   Widget _buildInputField(
     String label,
     TextEditingController controller, {
@@ -199,7 +187,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
     );
   }
 
-  // Style chung cho tất cả các ô nhập
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
