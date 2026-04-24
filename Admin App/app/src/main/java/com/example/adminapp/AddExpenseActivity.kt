@@ -345,14 +345,14 @@ fun AddExpenseForm(
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Description") }
+                label = { Text("Description (optional)") }
             )
         }
         item {
             OutlinedTextField(
                 value = location,
                 onValueChange = { location = it },
-                label = { Text("Location") }
+                label = { Text("Location (optional)") }
             )
         }
         item {

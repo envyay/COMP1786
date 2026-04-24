@@ -47,6 +47,7 @@ import com.example.adminapp.common.Constants
 import com.example.adminapp.common.ProjectStatus
 import com.example.adminapp.dao.ProjectDao
 import com.example.adminapp.database.AppDatabase
+import com.example.adminapp.helper.firestore.ProjectRepo
 import com.example.adminapp.models.ProjectModel
 import com.example.adminapp.models.SpecialRequirementModel
 import com.example.adminapp.ui.components.DatePickerModal
@@ -416,9 +417,8 @@ fun EditProjectForm(projectId: String?, dao: ProjectDao, onEditDone: () -> Unit 
                     departmentInformation = departmentInformation
                 )
                 CoroutineScope(Dispatchers.IO).launch {
-                    dao.update(
-                        project
-                    )
+                    dao.update(project)
+                    ProjectRepo.upsert(project)
                 }
                 onEditDone()
             }) {

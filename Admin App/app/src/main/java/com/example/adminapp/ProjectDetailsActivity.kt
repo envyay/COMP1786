@@ -3,6 +3,7 @@ package com.example.adminapp
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.addCallback
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -48,6 +49,10 @@ import kotlin.jvm.java
 class ProjectDetailsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        onBackPressedDispatcher.addCallback(this) {
+            onBackInvoked();
+        }
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "project-expense"
@@ -83,7 +88,7 @@ class ProjectDetailsActivity : ComponentActivity() {
                             title = project?.name ?: "Project Name",
                             showNavigationIcon = true,
                             onBackClick = {
-                                finish()
+                                onBackInvoked()
                             })
                     },
                 ) { innerPadding ->
@@ -167,6 +172,11 @@ class ProjectDetailsActivity : ComponentActivity() {
             }
         }
     }
+
+    fun onBackInvoked() {
+        setResult(RESULT_OK)
+        finish()
+    }
 }
 
 @Composable
@@ -185,7 +195,11 @@ fun DetailItem(label: String, value: String) {
 }
 
 @Composable
-fun ActionButton(onEdit: () -> Unit = {}, onViewExpense: () -> Unit = {}, onDelete: () -> Unit = {}) {
+fun ActionButton(
+    onEdit: () -> Unit = {},
+    onViewExpense: () -> Unit = {},
+    onDelete: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

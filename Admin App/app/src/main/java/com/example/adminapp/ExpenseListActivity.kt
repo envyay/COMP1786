@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.room.Room
 import com.example.adminapp.dao.ExpenseDao
 import com.example.adminapp.database.AppDatabase
+import com.example.adminapp.helper.firestore.ExpenseRepo
 import com.example.adminapp.models.ExpenseModel
 import com.example.adminapp.ui.components.PrimaryTopBar
 import com.example.adminapp.ui.theme.AdminAppTheme
@@ -107,6 +108,8 @@ class ExpenseListActivity : ComponentActivity() {
                                 onDelete = {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         dao.delete(expense)
+                                        ExpenseRepo.delete(expense.id.toString())
+
 
                                         val updated = dao.getByProject(projectId)
 
